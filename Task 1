@@ -1,0 +1,149 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
+#include <iomanip>
+#include <fstream>
+using namespace std;
+using namespace std::chrono;
+
+
+
+int bubble_sort(vector<int> arr) {
+    int comparisons = 0;
+    int n = arr.size();
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            comparisons++;
+            if (arr[j] > arr[j + 1]) swap(arr[j], arr[j + 1]);
+        }
+    }
+    return comparisons;
+}
+
+int selection_sort(vector<int> arr) {
+    int comparisons = 0;
+    int n = arr.size();
+    for (int i = 0; i < n - 1; i++) {
+        int minIndex = i;
+        for (int j = i + 1; j < n; j++) {
+            comparisons++;
+            if (arr[j] < arr[minIndex]) minIndex = j;
+        }
+        swap(arr[i], arr[minIndex]);
+    }
+    return comparisons;
+}
+
+int insertion_sort(vector<int> arr) {
+    int comparisons = 0;
+    int n = arr.size();
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            comparisons++;
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        if (j >= 0) comparisons++;
+        arr[j + 1] = key;
+    }
+    return comparisons;
+}
+
+vector<int> base_array(int n) {
+    vector<int> arr(n);
+    for (int i = 0; i < n; i++) arr[i] = i + 1;
+    return arr;
+}
+
+vector<int> random_array(int n) {
+    vector<int> arr = base_array(n);
+    random_shuffle(arr.begin(), arr.end());
+    return arr;
+}
+
+vector<int> sorted_array(int n) {
+    return base_array(n);
+}
+
+vector<int> reverse_array(int n) {
+    vector<int> arr = base_array(n);
+    reverse(arr.begin(), arr.end());
+    return arr;
+}
+
+void test_comparisons() {
+    srand(time(0));
+    ofstream csvFile("sorting_results.csv", ios::out); 
+
+    if (!csvFile.is_open()) {
+        cerr << "Error: Could not open CSV file for writing!" << endl;
+        return;
+    }
+
+    csvFile.seekp(0, ios::end);
+    if (csvFile.tellp() == 0) {
+        csvFile << "Size,Type,Bubble_Comparisons,Bubble_Time(s),Selection_Comparisons,Selection_Time(s),Insertion_Comparisons,Insertion_Time(s)\n";
+    }
+
+    cout << fixed << setprecision(6);
+    cout << "Size | Type | Bubble(Comp,Time s) | Selection(Comp,Time s) | Insertion(Comp,Time s)\n";
+    cout << "--------------------------------------------------------------------------------------\n";
+
+    for (int n = 1; n <= 30; n++) {
+        vector<string> types = { "Random", "Sorted", "Reverse" };
+        for (auto& type : types) {
+            vector<int> arr;
+            if (type == "Random") arr = random_array(n);
+            else if (type == "Sorted") arr = sorted_array(n);
+            else arr = reverse_array(n);
+
+            auto start = high_resolution_clock::now();
+            int bubbleComp = bubble_sort(arr);
+            auto end = high_resolution_clock::now();
+            double bubbleTime = duration<double>(end - start).count();
+
+            if (type == "Random") arr = random_array(n);
+            else if (type == "Sorted") arr = sorted_array(n);
+            else arr = reverse_array(n);
+
+            start = high_resolution_clock::now();
+            int selComp = selection_sort(arr);
+            end = high_resolution_clock::now();
+            double selTime = duration<double>(end - start).count();
+
+            if (type == "Random") arr = random_array(n);
+            else if (type == "Sorted") arr = sorted_array(n);
+            else arr = reverse_array(n);
+
+            start = high_resolution_clock::now();
+            int insComp = insertion_sort(arr);
+            end = high_resolution_clock::now();
+            double insTime = duration<double>(end - start).count();
+
+            cout << setw(4) << n << " | " << setw(8) << type << " | "
+                << setw(8) << bubbleComp << "," << setw(10) << bubbleTime << " | "
+                << setw(8) << selComp << "," << setw(10) << selTime << " | "
+                << setw(8) << insComp << "," << setw(10) << insTime << "\n";
+
+
+            csvFile << n << "," << type << ","
+                << bubbleComp << "," << fixed << setprecision(6) << bubbleTime << ","
+                << selComp << "," << selTime << ","
+                << insComp << "," << insTime << "\n";
+        }
+    }
+
+    csvFile.close();
+
+    system("start excel sorting_results.csv"); 
+
+
+int main() {
+    test_comparisons();
+    return 0;
+}

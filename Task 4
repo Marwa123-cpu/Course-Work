@@ -1,0 +1,24 @@
+using namespace std;
+
+bool Anagrams(string a, string b) {
+    if (a.length() != b.length()) return false;
+    sort(a.begin(), a.end());
+    sort(b.begin(), b.end());
+
+    return a == b;
+}
+
+int main() {
+    string first_word, second_word;
+    cout << "Enter first word: ";
+    cin >> first_word;
+    cout << "Enter second word: ";
+    cin >> second_word;
+
+    if (Anagrams(first_word, second_word))
+        cout << "The Two words are Anagrams .\n";
+    else
+        cout << "The Two words are not angrams!!!!\n";
+
+    return 0;
+}
